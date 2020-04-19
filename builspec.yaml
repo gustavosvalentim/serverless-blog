@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      node:*
+
+  build:
+    commands:
+      - sam package --s3-bucket $S3BUCKET --output-template-file $OUTPUT
+
+artifacts:
+  base-directory: .aws-sam
+  files:
+    - $OUTPUT

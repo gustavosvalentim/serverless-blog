@@ -1,0 +1,72 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Serverless API for a blog platform
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Parameters:
+  Environment:
+    Type: String
+
+  PostsTableName:
+    Type: String
+    Default: blog-posts
+
+Globals:
+  Function:
+    Timeout: 90
+    Runtime: nodejs12.x
+    Environment:
+      Variables:
+        posts_table: !Sub ${Environment}-blog-posts
+
+Resources:
+  GetPost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/get-post
+      Handler: handler.lambdaHandler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Sub ${Environment}-blog-posts
+      Events:
+        RestApi:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: GET
+
+  CreatePost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/create-post
+      Handler: handler.lambdaHandler
+      Policies:
+        - DynamoDBReadPolicy: 
+            TableName: !Sub ${Environment}-blog-posts
+      Events:
+        RestApi:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: POST
+
+  DeletePost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/delete-post
+      Handler: handler.lambdaHandler
+      Policies:
+        - DynamoDBReadPolicy: 
+            TableName: !Sub ${Environment}-blog-posts
+      Events:
+        RestApi:
+          Type: Api
+          Properties:
+            Path: /post
+            Method: DELETE
+
+Outputs:
+  RestApiUrl:
+    Value: !Sub ${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/
+
