@@ -5,21 +5,23 @@ const dynamodb = new aws.DynamoDB();
 /**
  * Deletes blog post that contains the ID passed in path parameters.
  * 
- * @param object pathParams is the path parameters got from API Gateway when a
+ * @param object pathParameters is the path parameters got from API Gateway when a
  * request is received.
- * @returns success message and the id of the item deleted or the error message.
+ * @returns success message and the id of the item deleted or error message.
  */
-async function handler({ pathParams }) {
-    try {
-        const deleteItemParams = {
-            TableName: process.env.posts_table,
-            Key={
-                id: {
-                    S: pathParams.id
-                }
+async function handler({ pathParameters }) {
+    // Parameters used in DynamoDB operations
+    const params = {
+        TableName: process.env.posts_table,
+        Key={
+            id: {
+                S: pathParameters.id
             }
         }
-        await dynamodb.deleteItem(deleteItemParams).promise();
+    }
+
+    try {
+        await dynamodb.deleteItem(params).promise();
     } catch(e) {
         return {
             body: JSON.stringify({
@@ -33,7 +35,7 @@ async function handler({ pathParams }) {
         body: JSON.stringify({
             message: 'Success',
             item: {
-                id: pathParams.id
+                id: id
             }
         }),
         statusCode: 200

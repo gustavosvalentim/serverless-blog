@@ -9,10 +9,16 @@ jest.mock('aws-sdk', () => {
     }
 });
 
-describe('...', () => {
+describe('Test create post handler', () => {
     it('should return statusCode 200', async () => {
         expect(await handler.lambdaHandler({
             body: JSON.stringify({ title: 'test' })
         })).toHaveProperty('statusCode', 200);
+    });
+
+    it('should return statusCode 400', async () => {
+        expect(await handler.lambdaHandler({
+            body: null
+        })).toHaveProperty('statusCode', 400);
     });
 });

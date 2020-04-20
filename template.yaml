@@ -3,10 +3,10 @@ Transform: AWS::Serverless-2016-10-31
 Description: >
   Serverless API for a blog platform
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Parameters:
   Environment:
     Type: String
+    Default: dev
 
   PostsTableName:
     Type: String
@@ -14,11 +14,11 @@ Parameters:
 
 Globals:
   Function:
-    Timeout: 90
+    Timeout: 10
     Runtime: nodejs12.x
     Environment:
       Variables:
-        posts_table: !Sub ${Environment}-blog-posts
+        posts_table: !Sub ${Environment}-${PostsTableName}
 
 Resources:
   GetPost:
@@ -28,12 +28,12 @@ Resources:
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Sub ${Environment}-blog-posts
+            TableName: !Sub ${Environment}-${PostsTableName}
       Events:
         RestApi:
           Type: Api
           Properties:
-            Path: /post
+            Path: /posts
             Method: GET
 
   CreatePost:
@@ -42,14 +42,29 @@ Resources:
       CodeUri: handlers/create-post
       Handler: handler.lambdaHandler
       Policies:
-        - DynamoDBReadPolicy: 
-            TableName: !Sub ${Environment}-blog-posts
+        - DynamoDBReadPolicy:
+            TableName: !Sub ${Environment}-${PostsTableName}
       Events:
         RestApi:
           Type: Api
           Properties:
-            Path: /post
+            Path: /posts
             Method: POST
+
+  UpdatePost:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: handlers/update-post
+      Handler: handler.lambdaHandler
+      Policies:
+        - DynamoDBCRUDPolicy:
+            TableName: !Sub ${Environment}-${PostsTableName}
+      Events:
+        RestApi:
+          Type: Api
+          Properties:
+            Path: /posts/{id}
+            Method: PUT
 
   DeletePost:
     Type: AWS::Serverless::Function
@@ -57,13 +72,13 @@ Resources:
       CodeUri: handlers/delete-post
       Handler: handler.lambdaHandler
       Policies:
-        - DynamoDBReadPolicy: 
-            TableName: !Sub ${Environment}-blog-posts
+        - DynamoDBCRUDPolicy:
+            TableName: !Sub ${Environment}-${PostsTableName}
       Events:
         RestApi:
           Type: Api
           Properties:
-            Path: /post
+            Path: /posts/{id}
             Method: DELETE
 
 Outputs:

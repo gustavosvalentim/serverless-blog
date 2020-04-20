@@ -5,34 +5,48 @@ const dynamodb = new aws.DynamoDB();
 /**
  * Returns all posts or just one if specified in path parameters.
  * 
- * @param object pathParams path parameters received in the request. If
- * pathParams is undefined or null, then all tasks will be returned.
+ * @param object pathParameters path parameters received in the request. If
+ * pathParameters is undefined or null, then all tasks will be returned.
  * @returns key value pairs from the item found or an array of items.
  */
-async function handler({ pathParams }) {
-    if(pathParams) {
-        const getItemParams = {
-            TableName: process.env.posts_table,
-            Key={
-                id: {
-                    S: pathParams.id
-                }
-            }
-        }
+async function handler({ pathParameters }) {
+    // Parameters used in DynamoDB operations
+    const params = {
+        TableName: process.env.posts_table
+    }
 
-        try {
-            const data = await dynamodb.getItem(getItemParams).promise();
-        } catch(e) {
-            return {
-                statusCode: 500
-            }
+    // Data present in response
+    let data;
+
+    try {
+
+        /** 
+         * Use getItem operation if pathParameter is present on request
+         * scan operation if pathParemeters is null
+         */
+        switch(typeof pathParameters) {
+            case 'string':
+                data = await dynamodb.getItem(params).promise();
+                break;
+            default:
+                data = await dynamodb.scan(params).promise();
+                break;
+        }
+    } catch(e) {
+        return {
+            body: JSON.stringify({
+                message: e.message
+            }),
+            statusCode: 500
         }
     }
 
     return {
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+            item: data
+        }),
         statusCode: 200
     }
 }
 
-lambda.exports.lambdaHandler = handler;
+module.exports.lambdaHandler = handler;
