@@ -5,7 +5,6 @@ phases:
       nodejs: 10
       python: 3.7
     commands:
-      - apt-get install python3-pip
       - pip3 install pipenv
       - pipenv install aws-sam-cli
 
