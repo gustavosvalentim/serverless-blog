@@ -26,6 +26,7 @@ async function handler({ pathParameters }) {
          */
         switch(typeof pathParameters) {
             case 'string':
+                params.Key = { id: pathParameters.id }
                 data = await dynamodb.getItem(params).promise();
                 break;
             default:

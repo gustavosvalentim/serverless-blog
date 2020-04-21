@@ -1,0 +1,273 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: >
+  Pipeline that gets source from github, build and run SAM application. After
+  all of that, deploy the application.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+
+  GithubOwner:
+    Type: String
+
+  GithubRepo:
+    Type: String
+
+  GithubBranch:
+    Type: String
+
+  GithubToken:
+    Type: String
+    NoEcho: true
+
+  GithubSecret:
+    Type: String
+    NoEcho: true
+
+  DeployBucket:
+    Type: String
+
+Resources:
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${Environment}-serverless-blog-artifats
+
+  BuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${Environment}ServerlessBlogBuildProject
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: S3BUCKET
+            Type: PLAINTEXT
+            Value: !Ref DeployBucket
+          - Name: OUTPUT
+            Type: PLAINTEXT
+            Value: output.yaml
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/standard:2.0
+        PrivilegedMode: true
+      ServiceRole: !Ref BuildProjectRole
+      Source:
+        Type: CODEPIPELINE
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Type: S3
+        Location: !Ref ArtifactsBucket
+      RoleArn: !GetAtt PipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: GithubSource
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: 1
+              Configuration:
+                Owner: !Ref GithubOwner
+                Repo: !Ref GithubRepo
+                Branch: !Ref GithubBranch
+                OAuthToken: !Ref GithubToken
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: SourceArtifact
+              RunOrder: 1
+
+        - Name: Build
+          Actions:
+            - Name: BuildSAM
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref BuildProject
+              InputArtifacts:
+                - Name: SourceArtifact
+              OutputArtifacts:
+                - Name: BuildArtifact
+              RunOrder: 2
+
+        - Name: Deploy
+          Actions:
+            - Name: DeploySAM
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: 1
+              Configuration:
+                ActionMode: REPLACE_ON_FAILURE
+                StackName: ServerlessBlogSAM
+                Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+                RoleArn: !GetAtt CfnDeploymentRole.Arn
+                TemplatePath: BuildArtifact::output.yaml
+                ParameterOverrides: !Sub >
+                  {
+                    "Environment": "${Environment}"
+                  }
+
+  GithubWebhook:
+    Type: AWS::CodePipeline::Webhook
+    Properties:
+      AuthenticationConfiguration:
+        SecretToken: !Ref GithubSecret
+      Filters:
+        - JsonPath: $.ref
+          MatchEquals: refs/heads/{Branch}
+      Authentication: GITHUB_HMAC
+      TargetPipeline: !Ref Pipeline
+      TargetAction: GithubSource
+      TargetPipelineVersion: !GetAtt Pipeline.Version
+      RegisterWithThirdParty: true
+
+  BuildProjectRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              AWS: '*'
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}BuildLogs
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:CreateLogGroup
+                  - logs:PutEventLogs
+                  - logs:PutLogEvents
+                Resource: '*'
+        - PolicyName: !Sub ${AWS::StackName}AccessS3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: '*'
+
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              AWS: '*'
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}CICD
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - codepipeline:GetPipeline
+                  - codepipeline:GetPipelineState
+                  - codepipeline:GetPipelineExecution
+                  - codepipeline:ListPipelineExecutions
+                  - codepipeline:ListActionTypes
+                  - codepipeline:ListPipelines
+                  - codebuild:*
+                Resource: '*'
+        - PolicyName: !Sub ${AWS::StackName}CfnDeploySAM
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:SetStackPolicy
+                  - cloudformation:ValidateTemplate
+                Resource: '*'
+        - PolicyName: !Sub ${AWS::StackName}CICDAccessS3
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetBucketPolicy
+                  - s3:GetObject
+                  - s3:ListAllMyBuckets
+                  - s3:ListBucket
+                  - s3:PutObject
+                  - s3:GetObjectVersioning
+                  - s3:GetBucketVersioning
+                Resource: '*'
+        - PolicyName: !Sub ${AWS::StackName}CICDIAMAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                Resource: '*'
+
+  CfnDeploymentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              AWS: '*'
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}S3DeploySAM
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: '*'
+        - PolicyName: !Sub ${AWS::StackName}IAMAcccessCfnDeploy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:PutRolePolicy
+                  - iam:AttachRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:DetachRolePolicy
+                  - iam:PassRole
+                Resource: '*'
+        - PolicyName: !Sub ${AWS::StackName}CfnAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudformation:*
+                Resource: '*'
