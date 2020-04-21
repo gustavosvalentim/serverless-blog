@@ -6,7 +6,7 @@ Description: >
 Parameters:
   Environment:
     Type: String
-    Default: dev
+    Default: Dev
 
   PostsTableName:
     Type: String
@@ -18,17 +18,18 @@ Globals:
     Runtime: nodejs12.x
     Environment:
       Variables:
-        posts_table: !Sub ${Environment}-${PostsTableName}
+        posts_table: !Sub ${PostsTableName}
 
 Resources:
   GetPost:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub ${Environment}GetPosts
       CodeUri: handlers/get-post
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Sub ${Environment}-${PostsTableName}
+            TableName: !Sub ${PostsTableName}
       Events:
         RestApi:
           Type: Api
@@ -39,11 +40,12 @@ Resources:
   CreatePost:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub ${Environment}CreatePost
       CodeUri: handlers/create-post
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Sub ${Environment}-${PostsTableName}
+            TableName: !Sub ${PostsTableName}
       Events:
         RestApi:
           Type: Api
@@ -54,11 +56,12 @@ Resources:
   UpdatePost:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub ${Environment}UpdatePost
       CodeUri: handlers/update-post
       Handler: handler.lambdaHandler
       Policies:
-        - DynamoDBCRUDPolicy:
-            TableName: !Sub ${Environment}-${PostsTableName}
+        - DynamoDBCrudPolicy:
+            TableName: !Sub ${PostsTableName}
       Events:
         RestApi:
           Type: Api
@@ -69,11 +72,12 @@ Resources:
   DeletePost:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub ${Environment}DeletePost
       CodeUri: handlers/delete-post
       Handler: handler.lambdaHandler
       Policies:
-        - DynamoDBCRUDPolicy:
-            TableName: !Sub ${Environment}-${PostsTableName}
+        - DynamoDBCrudPolicy:
+            TableName: !Sub ${PostsTableName}
       Events:
         RestApi:
           Type: Api
