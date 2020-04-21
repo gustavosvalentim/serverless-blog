@@ -2,7 +2,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      node: 12.x
+      nodejs: 12.x
       python: 3.7
     commands:
       - apt-get install python3-pip
