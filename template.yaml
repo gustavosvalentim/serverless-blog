@@ -18,9 +18,20 @@ Globals:
     Runtime: nodejs12.x
     Environment:
       Variables:
-        posts_table: !Sub ${PostsTableName}
+        posts_table: !Ref PostsTableName
 
 Resources:
+  PostsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Ref PostsTableName
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
   GetPost:
     Type: AWS::Serverless::Function
     Properties:
@@ -29,7 +40,7 @@ Resources:
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Sub ${PostsTableName}
+            TableName: !Ref PostsTableName
       Events:
         RestApi:
           Type: Api
@@ -45,7 +56,7 @@ Resources:
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBReadPolicy:
-            TableName: !Sub ${PostsTableName}
+            TableName: !Ref PostsTableName
       Events:
         RestApi:
           Type: Api
@@ -61,7 +72,7 @@ Resources:
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Sub ${PostsTableName}
+            TableName: !Ref PostsTableName
       Events:
         RestApi:
           Type: Api
@@ -77,7 +88,7 @@ Resources:
       Handler: handler.lambdaHandler
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Sub ${PostsTableName}
+            TableName: !Ref PostsTableName
       Events:
         RestApi:
           Type: Api

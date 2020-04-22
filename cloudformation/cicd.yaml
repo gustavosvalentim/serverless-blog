@@ -1,5 +1,4 @@
 AWSTemplateFormatVersion: 2010-09-09
-
 Description: >
   Pipeline that gets source from github, build and run SAM application. After
   all of that, deploy the application.
@@ -110,13 +109,15 @@ Resources:
               Configuration:
                 ActionMode: REPLACE_ON_FAILURE
                 StackName: ServerlessBlogSAM
-                Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM
+                Capabilities: CAPABILITY_IAM,CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND
                 RoleArn: !GetAtt CfnDeploymentRole.Arn
                 TemplatePath: BuildArtifact::output.yaml
                 ParameterOverrides: !Sub >
                   {
                     "Environment": "${Environment}"
                   }
+              InputArtifacts:
+                - Name: BuildArtifact
 
   GithubWebhook:
     Type: AWS::CodePipeline::Webhook
@@ -270,4 +271,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:*
+                  - lambda:*
+                  - apigateway:*
+                  - dynamodb:*
                 Resource: '*'
