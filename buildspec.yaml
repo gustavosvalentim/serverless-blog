@@ -8,6 +8,10 @@ phases:
       - pip3 install pipenv
       - pipenv install aws-sam-cli
 
+  pre-build:
+    commands:
+      - pipenv run sam build --use-container
+
   build:
     commands:
       - pipenv run sam package --s3-bucket $S3BUCKET --output-template-file $OUTPUT
