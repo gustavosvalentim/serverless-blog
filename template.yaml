@@ -55,7 +55,7 @@ Resources:
       CodeUri: handlers/create-post
       Handler: handler.lambdaHandler
       Policies:
-        - DynamoDBReadPolicy:
+        - DynamoDBWritePolicy:
             TableName: !Ref PostsTableName
       Events:
         RestApi:
