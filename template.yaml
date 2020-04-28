@@ -24,7 +24,7 @@ Globals:
     Cors:
       AllowHeaders: 'Authorization,Content-Type,Accept'
       AllowOrigin: '*'
-      AllowMethods: 'GET,POST,PUT,DELETE,OPTIONS'
+      AllowMethods: 'GET, POST, PUT, DELETE'
 
 Resources:
   PostsTable:

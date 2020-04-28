@@ -46,7 +46,10 @@ async function handler({ pathParameters }) {
         body: JSON.stringify({
             item: data
         }),
-        statusCode: 200
+        statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        }
     }
 }
 

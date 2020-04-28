@@ -54,7 +54,10 @@ async function handler({ body }) {
             message: 'Success',
             item: itemAutoProps
         }),
-        statusCode: 200
+        statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        }
     }
 }
 

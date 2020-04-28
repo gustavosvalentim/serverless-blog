@@ -36,7 +36,10 @@ async function handler({ pathParameters }) {
                 id: pathParameters.id
             }
         }),
-        statusCode: 200
+        statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        }
     }
 }
 
