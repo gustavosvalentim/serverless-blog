@@ -1,6 +1,6 @@
 const aws = require('aws-sdk');
 
-const dynamodb = new aws.DynamoDB();
+const documentClient = new aws.DynamoDB.DocumentClient();
 
 /**
  * Returns all posts or just one if specified in path parameters.
@@ -27,10 +27,10 @@ async function handler({ pathParameters }) {
         if(pathParameters && pathParameters.id) {
             params.Key = { id: pathParameters.id }
 
-            const item = await dynamodb.getItem(params).promise();
+            const item = await documentClient.get(params).promise();
             data = item.Item;
         } else {
-            const items = await dynamodb.scan(params).promise();
+            const items = await documentClient.scan(params).promise();
             data = items.Items;
         }
     } catch(e) {
