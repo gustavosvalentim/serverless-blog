@@ -103,14 +103,12 @@ Resources:
       CodeUri: handlers/get-presigned-url
       Handler: handler.lambdaHandler
       Policies:
-        - PolicyName: CreateS3PutObjectUrl
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:PutObject
-                Resource: '*'
+        - Version: 2012-10-17
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: '*'
       Events:
         RestApi:
           Type: Api
