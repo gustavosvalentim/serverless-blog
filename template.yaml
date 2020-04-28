@@ -96,6 +96,29 @@ Resources:
             Path: /posts/{id}
             Method: DELETE
 
+  GetPresignedUrl:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${Environment}GetPresignedUrl
+      CodeUri: handlers/get-presigned-url
+      Handler: handler.lambdaHandler
+      Policies:
+        - PolicyName: CreateS3PutObjectUrl
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: '*'
+      Events:
+        RestApi:
+          Type: Api
+          Properties:
+            Path: /url
+            Method: POST
+        
+
 Outputs:
   RestApiUrl:
     Value: !Sub ${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/
