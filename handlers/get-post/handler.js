@@ -26,9 +26,12 @@ async function handler({ pathParameters }) {
          */
         if(pathParameters && pathParameters.id) {
             params.Key = { id: pathParameters.id }
-            data = await dynamodb.getItem(params).promise();
+
+            const item = await dynamodb.getItem(params).promise();
+            data = item.Item;
         } else {
-            data = await dynamodb.scan(params).promise();
+            const items = await dynamodb.scan(params).promise();
+            data = items.Items;
         }
     } catch(e) {
         return {

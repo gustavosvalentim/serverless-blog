@@ -23,8 +23,7 @@ async function handler({ body }) {
     }
 
     const createdAt = new Date().getTime();
-    const item = {
-        ...parseBody,
+    const itemAutoProps = {
         id: uuid.v4().toString(),
         created_at: createdAt,
         updated_at: createdAt,
@@ -32,6 +31,7 @@ async function handler({ body }) {
         downvotes: [],
         views: []
     }
+    const item = { ...parseBody, ...itemAutoProps }
 
     const params = {
         TableName: process.env.posts_table,
@@ -52,7 +52,7 @@ async function handler({ body }) {
     return {
         body: JSON.stringify({
             message: 'Success',
-            item: parseBody
+            item: itemAutoProps
         }),
         statusCode: 200
     }
