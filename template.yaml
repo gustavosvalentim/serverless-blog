@@ -20,6 +20,13 @@ Globals:
       Variables:
         posts_table: !Ref PostsTableName
 
+  Globals:
+    Api:
+      Cors:
+        AllowHeaders: 'Authorization,Content-Type,Accept'
+        AllowOrigin: '*'
+        AllowMethods: 'GET,POST,PUT,DELETE,OPTIONS'
+
 Resources:
   PostsTable:
     Type: AWS::Serverless::SimpleTable
