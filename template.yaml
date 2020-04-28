@@ -21,7 +21,6 @@ Globals:
         posts_table: !Ref PostsTableName
 
   Api:
-    StageName: !Ref Environment
     Cors:
       AllowHeaders: "'Authorization,Content-Type,Accept'"
       AllowOrigin: "'*'"
