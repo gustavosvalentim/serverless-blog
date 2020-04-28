@@ -24,14 +24,11 @@ async function handler({ pathParameters }) {
          * Use getItem operation if pathParameter is present on request
          * scan operation if pathParemeters is null
          */
-        switch(typeof pathParameters) {
-            case 'string':
-                params.Key = { id: pathParameters.id }
-                data = await dynamodb.getItem(params).promise();
-                break;
-            default:
-                data = await dynamodb.scan(params).promise();
-                break;
+        if(pathParameters && pathParameters.id) {
+            params.Key = { id: pathParameters.id }
+            data = await dynamodb.getItem(params).promise();
+        } else {
+            data = await dynamodb.scan(params).promise();
         }
     } catch(e) {
         return {

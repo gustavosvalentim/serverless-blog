@@ -1,6 +1,6 @@
 const aws = require('aws-sdk');
 
-const dynamodb = new aws.DynamoDB();
+const dynamodb = new aws.DynamoDB.DocumentClient();
 
 /**
  * Deletes blog post that contains the ID passed in path parameters.
@@ -13,15 +13,13 @@ async function handler({ pathParameters }) {
     // Parameters used in DynamoDB operations
     const params = {
         TableName: process.env.posts_table,
-        Key={
-            id: {
-                S: pathParameters.id
-            }
+        Key: {
+            id: pathParameters.id
         }
     }
 
     try {
-        await dynamodb.deleteItem(params).promise();
+        await dynamodb.delete(params).promise();
     } catch(e) {
         return {
             body: JSON.stringify({
@@ -35,7 +33,7 @@ async function handler({ pathParameters }) {
         body: JSON.stringify({
             message: 'Success',
             item: {
-                id: id
+                id: pathParameters.id
             }
         }),
         statusCode: 200

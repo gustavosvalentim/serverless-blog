@@ -1,0 +1,24 @@
+{
+  "name": "serverless-blog",
+  "version": "1.0.0",
+  "description": "Serverless Blog is a Blog API that runs without server. The project is built\r using SAM (Serverless Application Model) in a NodeJS runtime.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest handlers/",
+    "start:local": "sam local start-api"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gustavosvalentim/serverless-blog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gustavosvalentim/serverless-blog/issues"
+  },
+  "homepage": "https://github.com/gustavosvalentim/serverless-blog#readme",
+  "devDependencies": {
+    "jest": "^25.4.0"
+  }
+}

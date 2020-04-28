@@ -15,7 +15,7 @@ Parameters:
 Globals:
   Function:
     Timeout: 10
-    Runtime: nodejs12.x
+    Runtime: nodejs10.x
     Environment:
       Variables:
         posts_table: !Ref PostsTableName

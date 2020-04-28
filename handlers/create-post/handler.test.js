@@ -2,10 +2,12 @@ const handler = require('./handler');
 
 jest.mock('aws-sdk', () => {
     return {
-        DynamoDB: jest.fn(() => ({
-            putItem: jest.fn().mockReturnThis(),
-            promise: jest.fn()
-        }))
+        DynamoDB: {
+            DocumentClient: jest.fn(() => ({
+                put: jest.fn().mockReturnThis(),
+                promise: jest.fn()
+            }))
+        }
     }
 });
 

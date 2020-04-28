@@ -1,7 +1,7 @@
 const uuid = require('uuid');
 const aws = require('aws-sdk');
 
-const dynamodb = new aws.DynamoDB();
+const dynamodb = new aws.DynamoDB.DocumentClient();
 
 /**
  * Create a new post in DynamoDB.
@@ -23,14 +23,6 @@ async function handler({ body }) {
     }
 
     const createdAt = new Date().getTime();
-    /**
-     * TODO: item must be in DynamoDB format. e.g:
-     *  item {
-     *      id: {
-     *          S: uuid.v4().toString()
-     *      }
-     *  }
-     */
     const item = {
         ...parseBody,
         id: uuid.v4().toString(),
@@ -47,7 +39,7 @@ async function handler({ body }) {
     }
 
     try {
-        await dynamodb.putItem(params).promise();
+        await dynamodb.put(params).promise();
     } catch(e) {
         return {
             body: JSON.stringify({
