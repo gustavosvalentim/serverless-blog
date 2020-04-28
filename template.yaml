@@ -21,10 +21,11 @@ Globals:
         posts_table: !Ref PostsTableName
 
   Api:
+    StageName: !Ref Environment
     Cors:
-      AllowHeaders: 'Authorization,Content-Type,Accept'
-      AllowOrigin: '*'
-      AllowMethods: 'GET, POST, PUT, DELETE'
+      AllowHeaders: "'Authorization,Content-Type,Accept'"
+      AllowOrigin: "'*'"
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
 
 Resources:
   PostsTable:
