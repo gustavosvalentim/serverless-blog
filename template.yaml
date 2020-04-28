@@ -53,6 +53,11 @@ Resources:
           Properties:
             Path: /posts
             Method: GET
+        RestApiPathParams:
+          Type: Api
+          Properties:
+            Path: /posts/{id}
+            Method: GET
 
   CreatePost:
     Type: AWS::Serverless::Function
